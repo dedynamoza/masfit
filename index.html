@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health & Fitness Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --danger: #e63946;
+            --warning: #ff9e00;
+            --info: #4895ef;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--dark);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .page {
+            padding: 30px;
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: var(--primary);
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background-color: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(to right, var(--gray), var(--dark));
+        }
+
+        .btn-google {
+            background: white;
+            color: var(--dark);
+            border: 1px solid var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-google:hover {
+            background: var(--light);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--light-gray);
+        }
+
+        .divider span {
+            padding: 0 15px;
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary);
+        }
+
+        .summary-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .summary-card p {
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .bmi-chart-container {
+            position: relative;
+            height: 200px;
+            margin: 30px 0;
+        }
+
+        .plan-section {
+            margin-top: 20px;
+        }
+
+        .plan-item {
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--light-gray);
+        }
+
+        .plan-header {
+            padding: 15px;
+            background: var(--light);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .plan-header:hover {
+            background: var(--light-gray);
+        }
+
+        .plan-header h4 {
+            font-size: 16px;
+            color: var(--dark);
+            margin: 0;
+        }
+
+        .plan-content {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .plan-item.active .plan-content {
+            padding: 15px;
+            max-height: 500px;
+        }
+
+        .plan-content p {
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .bmi-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .bmi-category {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .progress-chart {
+            margin: 20px 0;
+            height: 200px;
+        }
+
+        .target-card {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .target-card h3 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .target-card p {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 15px;
+            }
+            
+            .page {
+                padding: 20px;
+            }
+            
+            .logo h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Page -->
+        <div class="page active" id="login-page">
+            <div class="logo">
+                <h1>Health & Fitness</h1>
+                <p>Plan your health journey</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Masukkan username">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Masukkan password">
+            </div>
+            
+            <button class="btn" id="login-btn">Login</button>
+            
+            <div class="divider">
+                <span>atau</span>
+            </div>
+            
+            <button class="btn btn-google" id="google-login">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Login dengan Google
+            </button>
+        </div>
+
+        <!-- Main Page -->
+        <div class="page" id="main-page">
+            <div class="logo">
+                <h1>Data Diri</h1>
+                <p>Isi data untuk analisis kesehatan</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="name">Nama</label>
+                <input type="text" id="name" placeholder="Masukkan nama lengkap">
+            </div>
+            
+            <div class="form-group">
+                <label for="birthdate">Tanggal Lahir</label>
+                <input type="date" id="birthdate">
+            </div>
+            
+            <div class="form-group">
+                <label for="age">Umur</label>
+                <input type="text" id="age" placeholder="Akan terisi otomatis" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="height">Tinggi Badan (cm)</label>
+                <input type="number" id="height" placeholder="Masukkan tinggi badan">
+            </div>
+            
+            <div class="form-group">
+                <label for="weight">Berat Badan (kg)</label>
+                <input type="number" id="weight" placeholder="Masukkan berat badan">
+            </div>
+            
+            <div class="form-group">
+                <label for="activity">Aktivitas Harian</label>
+                <select id="activity">
+                    <option value="">Pilih aktivitas</option>
+                    <option value="hard">Hard</option>
+                    <option value="medium">Medium</option>
+                    <option value="slow">Slow</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="sport">Sport</label>
+                <select id="sport">
+                    <option value="">Pilih olahraga</option>
+                    <option value="swimming">Renang</option>
+                    <option value="football">Sepak Bola</option>
+                    <option value="fitness">Fitness</option>
+                    <option value="running">Lari</option>
+                    <option value="golf">Golf</option>
+                    <option value="padel">Padel</option>
+                    <option value="badminton">Badminton</option>
+                    <option value="volleyball">Volley</option>
+                    <option value="basketball">Basket</option>
+                    <option value="others">Others</option>
+                </select>
+            </div>
+            
+            <button class="btn" id="generate-btn">Generate Profile</button>
+        </div>
+
+        <!-- Summary Page -->
+        <div class="page" id="summary-page">
+            <div class="logo">
+                <h1>Health Summary</h1>
+                <p>Profil kesehatan Anda</p>
+            </div>
+            
+            <div class="summary-card">
+                <h3>Data Diri</h3>
+                <p id="summary-name">Nama: -</p>
+                <p id="summary-age">Umur: -</p>
+                <p id="summary-height">Tinggi: - cm</p>
+                <p id="summary-weight">Berat: - kg</p>
+                <p id="summary-activity">Aktivitas: -</p>
+                <p id="summary-sport">Olahraga: -</p>
+            </div>
+            
+            <div class="summary-card">
+                <h3>Body Mass Index (BMI)</h3>
+                <div class="bmi-chart-container">
+                    <canvas id="bmi-chart"></canvas>
+                </div>
+                <div class="bmi-indicator">
+                    <span>Kurus</span>
+                    <span>Normal</span>
+                    <span>Overweight</span>
+                    <span>Obesitas</span>
+                </div>
+                <div class="bmi-category" id="bmi-category">-</div>
+            </div>
+            
+            <button class="btn" id="plan-btn">Plan</button>
+            
+            <div class="plan-section" id="plan-section" style="display: none;">
+                <div class="plan-item">
+                    <div class="plan-header">
+                        <h4>Pola Makan</h4>
+                    </div>
+                    <div class="plan-content">
+                        <p id="diet-plan">-</p>
+                    </div>
+                </div>
+                
+                <div class="plan-item">
+                    <div class="plan-header">
+                        <h4>Index Kalori Tubuh</h4>
+                    </div>
+                    <div class="plan-content">
+                        <p id="calorie-index">-</p>
+                    </div>
+                </div>
+                
+                <div class="plan-item">
+                    <div class="plan-header">
+                        <h4>Aktivitas Fisik</h4>
+                    </div>
+                    <div class="plan-content">
+                        <p id="physical-activity">-</p>
+                    </div>
+                </div>
+                
+                <div class="plan-item">
+                    <div class="plan-header">
+                        <h4>Report Progress</h4>
+                    </div>
+                    <div class="plan-content">
+                        <div class="progress-chart">
+                            <canvas id="progress-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="plan-item">
+                    <div class="plan-header">
+                        <h4>Rencana Target</h4>
+                    </div>
+                    <div class="plan-content">
+                        <p id="target-plan">-</p>
+                    </div>
+                </div>
+                
+                <div class="plan-item">
+                    <div class="plan-header">
+                        <h4>Challenge</h4>
+                    </div>
+                    <div class="plan-content">
+                        <div class="target-card">
+                            <h3>Target Challenge</h3>
+                            <p id="challenge-target">-</p>
+                            <p id="challenge-exercise">-</p>
+                            <p id="challenge-diet">-</p>
+                            <p id="challenge-water">-</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn" id="save-plan-btn">SAVE PLAN</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let userData = {};
+        let bmiChart = null;
+        let progressChart = null;
+
+        // Page elements
+        const loginPage = document.getElementById('login-page');
+        const mainPage = document.getElementById('main-page');
+        const summaryPage = document.getElementById('summary-page');
+        
+        // Login functionality
+        document.getElementById('login-btn').addEventListener('click', function() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username && password) {
+                currentUser = username;
+                showPage(mainPage);
+            } else {
+                alert('Silakan isi username dan password');
+            }
+        });
+        
+        document.getElementById('google-login').addEventListener('click', function() {
+            currentUser = 'google_user';
+            showPage(mainPage);
+        });
+        
+        // Calculate age from birthdate
+        document.getElementById('birthdate').addEventListener('change', function() {
+            const birthdate = new Date(this.value);
+            const today = new Date();
+            
+            let years = today.getFullYear() - birthdate.getFullYear();
+            let months = today.getMonth() - birthdate.getMonth();
+            let days = today.getDate() - birthdate.getDate();
+            
+            if (days < 0) {
+                months--;
+                days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+            }
+            
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+            
+            document.getElementById('age').value = `${years} Tahun, ${months} Bulan, ${days} Hari`;
+        });
+        
+        // Generate profile
+        document.getElementById('generate-btn').addEventListener('click', function() {
+            const name = document.getElementById('name').value;
+            const birthdate = document.getElementById('birthdate').value;
+            const age = document.getElementById('age').value;
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const activity = document.getElementById('activity').value;
+            const sport = document.getElementById('sport').value;
+            
+            if (!name || !birthdate || !height || !weight || !activity || !sport) {
+                alert('Silakan lengkapi semua data');
+                return;
+            }
+            
+            // Save user data
+            userData = {
+                name,
+                birthdate,
+                age,
+                height,
+                weight,
+                activity,
+                sport
+            };
+            
+            // Update summary page
+            document.getElementById('summary-name').textContent = `Nama: ${name}`;
+            document.getElementById('summary-age').textContent = `Umur: ${age}`;
+            document.getElementById('summary-height').textContent = `Tinggi: ${height} cm`;
+            document.getElementById('summary-weight').textContent = `Berat: ${weight} kg`;
+            document.getElementById('summary-activity').textContent = `Aktivitas: ${getActivityText(activity)}`;
+            document.getElementById('summary-sport').textContent = `Olahraga: ${getSportText(sport)}`;
+            
+            // Calculate and display BMI
+            const bmi = calculateBMI(height, weight);
+            displayBMIChart(bmi);
+            
+            // Generate health plan
+            generateHealthPlan(bmi);
+            
+            // Show summary page
+            showPage(summaryPage);
+        });
+        
+        // Show plan section
+        document.getElementById('plan-btn').addEventListener('click', function() {
+            const planSection = document.getElementById('plan-section');
+            planSection.style.display = 'block';
+            
+            // Add animation
+            planSection.style.animation = 'fadeIn 0.5s ease';
+            
+            // Scroll to plan section
+            planSection.scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        // Toggle plan items
+        document.querySelectorAll('.plan-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const item = this.parentElement;
+                item.classList.toggle('active');
+            });
+        });
+        
+        // Save plan as PDF
+        document.getElementById('save-plan-btn').addEventListener('click', function() {
+            savePlanAsPDF();
+        });
+        
+        // Helper functions
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            page.classList.add('active');
+        }
+        
+        function getActivityText(activity) {
+            const activities = {
+                'hard': 'Hard',
+                'medium': 'Medium',
+                'slow': 'Slow'
+            };
+            return activities[activity] || activity;
+        }
+        
+        function getSportText(sport) {
+            const sports = {
+                'swimming': 'Renang',
+                'football': 'Sepak Bola',
+                'fitness': 'Fitness',
+                'running': 'Lari',
+                'golf': 'Golf',
+                'padel': 'Padel',
+                'badminton': 'Badminton',
+                'volleyball': 'Volley',
+                'basketball': 'Basket',
+                'others': 'Others'
+            };
+            return sports[sport] || sport;
+        }
+        
+        function calculateBMI(height, weight) {
+            // Convert height to meters
+            const heightInMeters = height / 100;
+            // Calculate BMI
+            return weight / (heightInMeters * heightInMeters);
+        }
+        
+        function displayBMIChart(bmi) {
+            const ctx = document.getElementById('bmi-chart').getContext('2d');
+            
+            // Determine BMI category and color
+            let bmiCategory, bmiColor;
+            
+            if (bmi < 17.0) {
+                bmiCategory = 'Sangat Kurus';
+                bmiColor = '#4cc9f0';
+            } else if (bmi < 18.5) {
+                bmiCategory = 'Kurus';
+                bmiColor = '#4895ef';
+            } else if (bmi < 25) {
+                bmiCategory = 'Normal / Ideal';
+                bmiColor = '#4ade80';
+            } else if (bmi < 30) {
+                bmiCategory = 'Kelebihan Berat';
+                bmiColor = '#ff9e00';
+            } else if (bmi < 35) {
+                bmiCategory = 'Obesitas Tingkat I';
+                bmiColor = '#f97316';
+            } else if (bmi < 40) {
+                bmiCategory = 'Obesitas Tingkat II';
+                bmiColor = '#ef4444';
+            } else {
+                bmiCategory = 'Obesitas Tingkat III';
+                bmiColor = '#dc2626';
+            }
+            
+            // Update BMI category text
+            document.getElementById('bmi-category').textContent = `${bmiCategory} (BMI: ${bmi.toFixed(1)})`;
+            document.getElementById('bmi-category').style.color = bmiColor;
+            
+            // Create gauge chart
+            if (bmiChart) {
+                bmiChart.destroy();
+            }
+            
+            bmiChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [bmi, 40 - bmi], // 40 is the max value for visualization
+                        backgroundColor: [bmiColor, '#e5e7eb'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    circumference: 180,
+                    rotation: -90,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true
+                    }
+                }
+            });
+        }
+        
+        function generateHealthPlan(bmi) {
+            // Determine health recommendations based on BMI
+            let dietPlan, calorieIndex, physicalActivity, targetPlan;
+            let challengeTarget, challengeExercise, challengeDiet, challengeWater;
+            
+            if (bmi < 17.0) {
+                // Sangat Kurus
+                dietPlan = "Tinggi kalori & protein: nasi, daging tanpa lemak, telur, susu full cream, alpukat, kacang-kacangan. Frekuensi: 5–6 kali makan per hari (3 besar + 2–3 snack sehat).";
+                calorieIndex = "Kebutuhan kalori harian: Tinggi (2500-3000 kkal). Fokus pada peningkatan massa tubuh dengan asupan protein tinggi.";
+                physicalActivity = "Latihan beban ringan, yoga, jalan kaki — hindari olahraga ekstrem pembakar lemak. Durasi: 30 menit, 3-4 kali seminggu.";
+                targetPlan = "Target: Menaikkan berat badan hingga mencapai BMI normal dalam 3-4 bulan.";
+                challengeTarget = "Target: Menaikkan 5-8 kg dalam 60 hari";
+                challengeExercise = "Latihan fisik: Latihan beban ringan 3x seminggu, jalan kaki 20 menit 2x seminggu";
+                challengeDiet = "Pola makan: Konsumsi 5-6 kali sehari dengan fokus protein tinggi dan karbohidrat kompleks";
+                challengeWater = "Minum air putih: 2-2.5 liter per hari";
+            } else if (bmi < 18.5) {
+                // Kurus
+                dietPlan = "Protein sedang-tinggi, karbo kompleks (nasi merah, oat), buah & sayur segar, susu. Frekuensi: 4–5 kali makan (3 besar + 2 snack).";
+                calorieIndex = "Kebutuhan kalori harian: Sedang-tinggi (2200-2600 kkal). Fokus pada pembentukan otot dengan protein berkualitas.";
+                physicalActivity = "Latihan kekuatan (push-up, resistance band), jogging ringan. Durasi: 40 menit, 4 kali seminggu.";
+                targetPlan = "Target: Mencapai berat badan ideal dengan meningkatkan massa otot dalam 2-3 bulan.";
+                challengeTarget = "Target: Menaikkan 3-5 kg dalam 45 hari";
+                challengeExercise = "Latihan fisik: Latihan kekuatan 3x seminggu, jogging 30 menit 2x seminggu";
+                challengeDiet = "Pola makan: 4-5 kali sehari dengan fokus protein dan karbohidrat kompleks";
+                challengeWater = "Minum air putih: 2 liter per hari";
+            } else if (bmi < 25) {
+                // Normal / Ideal
+                dietPlan = "Seimbang: karbo kompleks 50%, protein 25%, lemak sehat 25% (olive oil, ikan, alpukat). Frekuensi: 3 kali makan utama + 1 snack sehat.";
+                calorieIndex = "Kebutuhan kalori harian: Normal (1800-2200 kkal). Pertahankan keseimbangan nutrisi untuk menjaga berat badan ideal.";
+                physicalActivity = "150 menit/minggu aktivitas aerobik (jalan cepat, bersepeda, berenang) + latihan kekuatan 2x/minggu.";
+                targetPlan = "Target: Mempertahankan berat badan ideal dan meningkatkan kebugaran fisik.";
+                challengeTarget = "Target: Mempertahankan berat badan ideal dan meningkatkan kebugaran dalam 30 hari";
+                challengeExercise = "Latihan fisik: Kardio 30 menit 3x seminggu, latihan kekuatan 2x seminggu";
+                challengeDiet = "Pola makan: 3 kali makan utama + 1 snack sehat dengan komposisi seimbang";
+                challengeWater = "Minum air putih: 2 liter per hari";
+            } else if (bmi < 30) {
+                // Kelebihan Berat (Overweight)
+                dietPlan = "Rendah lemak & gula, tinggi serat: sayur, buah, ikan, dada ayam, oats. Frekuensi: 3 kali makan utama + 1–2 snack rendah kalori.";
+                calorieIndex = "Kebutuhan kalori harian: Sedang dengan defisit ringan (1600-2000 kkal). Fokus pada pengurangan lemak tubuh.";
+                physicalActivity = "Kardio rutin (lari, sepeda, zumba) 30–45 menit/hari + latihan otot. Frekuensi: 5 kali seminggu.";
+                targetPlan = "Target: Menurunkan 5-10% berat badan dalam 2-3 bulan.";
+                challengeTarget = "Target: Menurunkan 4-6 kg dalam 45 hari";
+                challengeExercise = "Latihan fisik: Kardio 45 menit 4x seminggu, latihan kekuatan 2x seminggu";
+                challengeDiet = "Pola makan: 3 kali makan utama dengan porsi terkontrol + 1-2 snack rendah kalori";
+                challengeWater = "Minum air putih: 2.5 liter per hari";
+            } else if (bmi < 35) {
+                // Obesitas Tingkat I
+                dietPlan = "Defisit kalori: kurangi 500–700 kal/hari, konsumsi protein tinggi (ikan, tahu, tempe), serat tinggi. Frekuensi: 3 kali makan porsi kecil, hindari makan malam berat.";
+                calorieIndex = "Kebutuhan kalori harian: Defisit sedang (1400-1800 kkal). Fokus pada penurunan berat badan yang konsisten.";
+                physicalActivity = "Jalan cepat 45 menit/hari, berenang, HIIT ringan, dan latihan kekuatan. Frekuensi: 5-6 kali seminggu.";
+                targetPlan = "Target: Menurunkan 10-15% berat badan dalam 3-4 bulan.";
+                challengeTarget = "Target: Menurunkan 6-8 kg dalam 60 hari";
+                challengeExercise = "Latihan fisik: Jalan cepat 45 menit 5x seminggu, latihan ringan 2x seminggu";
+                challengeDiet = "Pola makan: 3 kali makan porsi kecil dengan fokus protein dan serat tinggi";
+                challengeWater = "Minum air putih: 3 liter per hari";
+            } else if (bmi < 40) {
+                // Obesitas Tingkat II
+                dietPlan = "Pola rendah karbo (low-carb), tinggi protein nabati, banyak sayur, air putih minimal 2L/hari. Frekuensi: 3 kali makan kecil + snack buah rendah gula.";
+                calorieIndex = "Kebutuhan kalori harian: Defisit signifikan (1200-1600 kkal). Di bawah pengawasan ahli gizi jika memungkinkan.";
+                physicalActivity = "Aktivitas sedang setiap hari (jalan kaki 60 menit), mulai resistance training. Frekuensi: Setiap hari dengan intensitas rendah.";
+                targetPlan = "Target: Menurunkan 15-20% berat badan dalam 4-6 bulan.";
+                challengeTarget = "Target: Menurunkan 8-10 kg dalam 75 hari";
+                challengeExercise = "Latihan fisik: Jalan kaki 60 menit setiap hari, latihan ringan 3x seminggu";
+                challengeDiet = "Pola makan: 3 kali makan kecil + snack buah rendah gula dengan fokus protein nabati";
+                challengeWater = "Minum air putih: 3 liter per hari";
+            } else {
+                // Obesitas Tingkat III (Morbid)
+                dietPlan = "Pola makan dikontrol ketat: rendah lemak, tinggi serat & protein nabati, konsultasi ahli gizi. Frekuensi: 5–6 kali makan kecil, hindari minuman manis sepenuhnya.";
+                calorieIndex = "Kebutuhan kalori harian: Sangat terbatas (1000-1400 kkal). Harus di bawah pengawasan medis.";
+                physicalActivity = "Aktivitas ringan bertahap: jalan pelan, senam air, terapi fisik; konsultasi dokter untuk program aman.";
+                targetPlan = "Target: Menurunkan 20-25% berat badan dalam 6-12 bulan dengan pengawasan medis.";
+                challengeTarget = "Target: Menurunkan 10-12 kg dalam 90 hari dengan pengawasan medis";
+                challengeExercise = "Latihan fisik: Jalan pelan 30 menit setiap hari, aktivitas ringan sesuai anjuran dokter";
+                challengeDiet = "Pola makan: 5-6 kali makan kecil dengan komposisi rendah lemak dan tinggi serat";
+                challengeWater = "Minum air putih: 3 liter per hari";
+            }
+            
+            // Update plan elements
+            document.getElementById('diet-plan').textContent = dietPlan;
+            document.getElementById('calorie-index').textContent = calorieIndex;
+            document.getElementById('physical-activity').textContent = physicalActivity;
+            document.getElementById('target-plan').textContent = targetPlan;
+            
+            // Update challenge elements
+            document.getElementById('challenge-target').textContent = challengeTarget;
+            document.getElementById('challenge-exercise').textContent = challengeExercise;
+            document.getElementById('challenge-diet').textContent = challengeDiet;
+            document.getElementById('challenge-water').textContent = challengeWater;
+            
+            // Create progress chart
+            const progressCtx = document.getElementById('progress-chart').getContext('2d');
+            
+            if (progressChart) {
+                progressChart.destroy();
+            }
+            
+            progressChart = new Chart(progressCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
+                    datasets: [{
+                        label: 'Berat Badan (kg)',
+                        data: [userData.weight, userData.weight * 0.98, userData.weight * 0.96, userData.weight * 0.94],
+                        borderColor: '#4361ee',
+                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Progress Berat Badan (4 Minggu)'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        function savePlanAsPDF() {
+            // In a real implementation, this would use jsPDF to generate a PDF
+            alert('Fitur ekspor PDF akan mengunduh rencana kesehatan Anda. Dalam implementasi lengkap, ini akan menghasilkan file PDF dengan semua detail rencana.');
+            
+            // This is a simplified version - in a real app, you would use jsPDF to generate the PDF
+            // For demonstration purposes, we'll just show an alert
+        }
+    </script>
+</body>
+</html>
