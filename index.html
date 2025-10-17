@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health & Fitness Planner</title>
+    <title>MasFit</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -306,8 +306,8 @@
         <!-- Login Page -->
         <div class="page active" id="login-page">
             <div class="logo">
-                <h1>Health & Fitness</h1>
-                <p>Plan your health journey</p>
+                <h1>MasFit </h1>
+                <p>Sehat Bareng Masri</p>
             </div>
             
             <div class="form-group">
@@ -343,6 +343,8 @@
                 <h1>Data Diri</h1>
                 <p>Isi data untuk analisis kesehatan</p>
             </div>
+
+            <button class="btn btn-secondary" id="back-to-login-btn">Kembali</button>
             
             <div class="form-group">
                 <label for="name">Nama</label>
@@ -391,7 +393,7 @@
                     <option value="padel">Padel</option>
                     <option value="badminton">Badminton</option>
                     <option value="volleyball">Volley</option>
-                    <option value="basketball">Basket</option>
+                    <option value="basketball">Ngocok</option>
                     <option value="others">Others</option>
                 </select>
             </div>
@@ -405,6 +407,8 @@
                 <h1>Health Summary</h1>
                 <p>Profil kesehatan Anda</p>
             </div>
+
+            <button class="btn btn-secondary" id="back-to-main-btn">Kembali</button>
             
             <div class="summary-card">
                 <h3>Data Diri</h3>
@@ -498,6 +502,70 @@
                 <button class="btn" id="save-plan-btn">SAVE PLAN</button>
             </div>
         </div>
+
+        <!-- Edit Profile Page -->
+        <div class="page" id="edit-profile-page">
+            <div class="logo">
+                <h1>Edit Profile</h1>
+                <p>Edit data profil kesehatan Anda</p>
+            </div>
+
+            <button class="btn btn-secondary" id="back-to-summary-btn">Kembali</button>
+
+            <div class="form-group">
+                <label for="edit-name">Nama</label>
+                <input type="text" id="edit-name" placeholder="Masukkan nama lengkap">
+            </div>
+
+            <div class="form-group">
+                <label for="edit-birthdate">Tanggal Lahir</label>
+                <input type="date" id="edit-birthdate">
+            </div>
+
+            <div class="form-group">
+                <label for="edit-age">Umur</label>
+                <input type="text" id="edit-age" placeholder="Akan terisi otomatis" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="edit-height">Tinggi Badan (cm)</label>
+                <input type="number" id="edit-height" placeholder="Masukkan tinggi badan">
+            </div>
+
+            <div class="form-group">
+                <label for="edit-weight">Berat Badan (kg)</label>
+                <input type="number" id="edit-weight" placeholder="Masukkan berat badan">
+            </div>
+
+            <div class="form-group">
+                <label for="edit-activity">Aktivitas Harian</label>
+                <select id="edit-activity">
+                    <option value="">Pilih aktivitas</option>
+                    <option value="hard">Hard</option>
+                    <option value="medium">Medium</option>
+                    <option value="slow">Slow</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="edit-sport">Sport</label>
+                <select id="edit-sport">
+                    <option value="">Pilih olahraga</option>
+                    <option value="swimming">Renang</option>
+                    <option value="football">Sepak Bola</option>
+                    <option value="fitness">Fitness</option>
+                    <option value="running">Lari</option>
+                    <option value="golf">Golf</option>
+                    <option value="padel">Padel</option>
+                    <option value="badminton">Badminton</option>
+                    <option value="volleyball">Volley</option>
+                    <option value="basketball">Basket</option>
+                    <option value="others">Others</option>
+                </select>
+            </div>
+
+            <button class="btn" id="save-edit-btn">Simpan Perubahan</button>
+        </div>
     </div>
 
     <script>
@@ -511,6 +579,7 @@
         const loginPage = document.getElementById('login-page');
         const mainPage = document.getElementById('main-page');
         const summaryPage = document.getElementById('summary-page');
+        const editProfilePage = document.getElementById('edit-profile-page');
         
         // Login functionality
         document.getElementById('login-btn').addEventListener('click', function() {
@@ -617,6 +686,104 @@
             });
         });
         
+        // Back buttons
+        document.getElementById('back-to-login-btn').addEventListener('click', function() {
+            showPage(loginPage);
+        });
+
+        document.getElementById('back-to-main-btn').addEventListener('click', function() {
+            showPage(mainPage);
+        });
+
+        document.getElementById('back-to-summary-btn').addEventListener('click', function() {
+            showPage(summaryPage);
+        });
+
+        // Edit profile button (add to summary page)
+        const editProfileBtn = document.createElement('button');
+        editProfileBtn.className = 'btn btn-secondary';
+        editProfileBtn.id = 'edit-profile-btn';
+        editProfileBtn.textContent = 'Edit Profile';
+        editProfileBtn.style.marginTop = '10px';
+        document.querySelector('#summary-page .logo').appendChild(editProfileBtn);
+
+        document.getElementById('edit-profile-btn').addEventListener('click', function() {
+            // Populate edit form with current data
+            document.getElementById('edit-name').value = userData.name;
+            document.getElementById('edit-birthdate').value = userData.birthdate;
+            document.getElementById('edit-age').value = userData.age;
+            document.getElementById('edit-height').value = userData.height;
+            document.getElementById('edit-weight').value = userData.weight;
+            document.getElementById('edit-activity').value = userData.activity;
+            document.getElementById('edit-sport').value = userData.sport;
+            showPage(editProfilePage);
+        });
+
+        // Calculate age for edit form
+        document.getElementById('edit-birthdate').addEventListener('change', function() {
+            const birthdate = new Date(this.value);
+            const today = new Date();
+
+            let years = today.getFullYear() - birthdate.getFullYear();
+            let months = today.getMonth() - birthdate.getMonth();
+            let days = today.getDate() - birthdate.getDate();
+
+            if (days < 0) {
+                months--;
+                days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+            }
+
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            document.getElementById('edit-age').value = `${years} Tahun, ${months} Bulan, ${days} Hari`;
+        });
+
+        // Save edit
+        document.getElementById('save-edit-btn').addEventListener('click', function() {
+            const name = document.getElementById('edit-name').value;
+            const birthdate = document.getElementById('edit-birthdate').value;
+            const age = document.getElementById('edit-age').value;
+            const height = parseFloat(document.getElementById('edit-height').value);
+            const weight = parseFloat(document.getElementById('edit-weight').value);
+            const activity = document.getElementById('edit-activity').value;
+            const sport = document.getElementById('edit-sport').value;
+
+            if (!name || !birthdate || !height || !weight || !activity || !sport) {
+                alert('Silakan lengkapi semua data');
+                return;
+            }
+
+            // Update user data
+            userData = {
+                name,
+                birthdate,
+                age,
+                height,
+                weight,
+                activity,
+                sport
+            };
+
+            // Update summary page
+            document.getElementById('summary-name').textContent = `Nama: ${name}`;
+            document.getElementById('summary-age').textContent = `Umur: ${age}`;
+            document.getElementById('summary-height').textContent = `Tinggi: ${height} cm`;
+            document.getElementById('summary-weight').textContent = `Berat: ${weight} kg`;
+            document.getElementById('summary-activity').textContent = `Aktivitas: ${getActivityText(activity)}`;
+            document.getElementById('summary-sport').textContent = `Olahraga: ${getSportText(sport)}`;
+
+            // Recalculate BMI and regenerate plan
+            const bmi = calculateBMI(height, weight);
+            displayBMIChart(bmi);
+            generateHealthPlan(bmi);
+
+            showPage(summaryPage);
+            alert('Profile berhasil diperbarui!');
+        });
+
         // Save plan as PDF
         document.getElementById('save-plan-btn').addEventListener('click', function() {
             savePlanAsPDF();
@@ -693,38 +860,64 @@
             document.getElementById('bmi-category').textContent = `${bmiCategory} (BMI: ${bmi.toFixed(1)})`;
             document.getElementById('bmi-category').style.color = bmiColor;
             
-            // Create gauge chart
-            if (bmiChart) {
-                bmiChart.destroy();
-            }
-            
-            bmiChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: [bmi, 40 - bmi], // 40 is the max value for visualization
-                        backgroundColor: [bmiColor, '#e5e7eb'],
-                        borderWidth: 0
-                    }]
+    // Create bar chart with gradient
+    if (bmiChart) {
+        bmiChart.destroy();
+    }
+
+    const gradient = ctx.createLinearGradient(0, 0, 400, 0);
+    gradient.addColorStop(0, '#4cc9f0');
+    gradient.addColorStop(0.1, '#4895ef');
+    gradient.addColorStop(0.4, '#4ade80');
+    gradient.addColorStop(0.6, '#ff9e00');
+    gradient.addColorStop(0.8, '#f97316');
+    gradient.addColorStop(0.9, '#ef4444');
+    gradient.addColorStop(1, '#dc2626');
+
+    bmiChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['BMI'],
+            datasets: [{
+                label: 'Body Mass Index',
+                data: [bmi],
+                backgroundColor: gradient,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
                 },
-                options: {
-                    circumference: 180,
-                    rotation: -90,
-                    cutout: '70%',
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            enabled: false
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `BMI: ${context.parsed.x.toFixed(1)}`;
                         }
-                    },
-                    animation: {
-                        animateRotate: true,
-                        animateScale: true
                     }
                 }
-            });
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 40,
+                    title: {
+                        display: false
+                    }
+                },
+                y: {
+                    display: false
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutBounce'
+            }
+        }
+    });
         }
         
         function generateHealthPlan(bmi) {
@@ -857,11 +1050,92 @@
         }
         
         function savePlanAsPDF() {
-            // In a real implementation, this would use jsPDF to generate a PDF
-            alert('Fitur ekspor PDF akan mengunduh rencana kesehatan Anda. Dalam implementasi lengkap, ini akan menghasilkan file PDF dengan semua detail rencana.');
-            
-            // This is a simplified version - in a real app, you would use jsPDF to generate the PDF
-            // For demonstration purposes, we'll just show an alert
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Title
+            doc.setFontSize(20);
+            doc.text('Health & Fitness Plan', 20, 30);
+
+            // Profile Data
+            doc.setFontSize(16);
+            doc.text('Data Profil:', 20, 50);
+            doc.setFontSize(12);
+            doc.text(`Nama: ${userData.name}`, 20, 65);
+            doc.text(`Umur: ${userData.age}`, 20, 75);
+            doc.text(`Tinggi: ${userData.height} cm`, 20, 85);
+            doc.text(`Berat: ${userData.weight} kg`, 20, 95);
+            doc.text(`Aktivitas: ${getActivityText(userData.activity)}`, 20, 105);
+            doc.text(`Olahraga: ${getSportText(userData.sport)}`, 20, 115);
+
+            // BMI
+            const bmi = calculateBMI(userData.height, userData.weight);
+            doc.setFontSize(16);
+            doc.text('BMI:', 20, 135);
+            doc.setFontSize(12);
+            doc.text(`BMI: ${bmi.toFixed(1)}`, 20, 145);
+
+            // 2 Week Plan Table
+            doc.setFontSize(16);
+            doc.text('Rencana 2 Minggu:', 20, 165);
+
+            // Generate 2 week plan based on BMI
+            const planData = generateTwoWeekPlan(bmi);
+
+            // Table headers
+            doc.setFontSize(10);
+            doc.text('Hari', 20, 180);
+            doc.text('Tanggal', 50, 180);
+            doc.text('Makan', 90, 180);
+            doc.text('Olahraga', 140, 180);
+
+            let yPos = 190;
+            planData.forEach(day => {
+                doc.text(day.day, 20, yPos);
+                doc.text(day.date, 50, yPos);
+                doc.text(day.meal, 90, yPos);
+                doc.text(day.exercise, 140, yPos);
+                yPos += 10;
+            });
+
+            // Save the PDF
+            doc.save('health_fitness_plan.pdf');
+        }
+
+        function generateTwoWeekPlan(bmi) {
+            const today = new Date();
+            const plan = [];
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+            // Meal and exercise suggestions based on BMI
+            let meals, exercises;
+
+            if (bmi < 18.5) {
+                meals = ['Nasi, ayam, sayur', 'Oatmeal, telur, buah', 'Nasi merah, ikan, salad', 'Smoothie, roti gandum', 'Nasi, daging, sayur', 'Yogurt, buah, kacang', 'Nasi, tempe, sayur'];
+                exercises = ['Push-up 3x10', 'Jogging 20 min', 'Yoga 30 min', 'Resistance band', 'Swimming 30 min', 'Walking 45 min', 'Rest'];
+            } else if (bmi < 25) {
+                meals = ['Nasi, ayam, sayur', 'Oatmeal, telur, buah', 'Nasi merah, ikan, salad', 'Smoothie, roti gandum', 'Nasi, daging, sayur', 'Yogurt, buah, kacang', 'Nasi, tempe, sayur'];
+                exercises = ['Running 30 min', 'Gym workout', 'Yoga 30 min', 'Cycling 45 min', 'Swimming 30 min', 'Walking 45 min', 'Rest'];
+            } else {
+                meals = ['Sayur, ayam tanpa kulit', 'Oatmeal, buah', 'Ikan, salad', 'Smoothie hijau', 'Ayam, sayur', 'Yogurt rendah lemak', 'Tempe, sayur'];
+                exercises = ['Walking 45 min', 'Gym cardio', 'Yoga 30 min', 'Cycling 30 min', 'Swimming 30 min', 'Light exercise', 'Rest'];
+            }
+
+            for (let i = 0; i < 14; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                const dayName = days[date.getDay()];
+                const dateStr = date.toLocaleDateString('id-ID');
+
+                plan.push({
+                    day: dayName,
+                    date: dateStr,
+                    meal: meals[date.getDay()],
+                    exercise: exercises[date.getDay()]
+                });
+            }
+
+            return plan;
         }
     </script>
 </body>
